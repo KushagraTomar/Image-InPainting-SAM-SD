@@ -1,5 +1,8 @@
 # 🖼️ Image Inpainting with SAM + Stable Diffusion
 This repository provides an image inpainting pipeline combining Segment Anything Model (SAM) and Stable Diffusion. You can either fill a masked region with new content or replace an object based on a text prompt and point coordinates.
+
+<img width="2588" height="1406" alt="image" src="https://github.com/user-attachments/assets/9a0f9d2a-bbae-4179-bdc1-af48fea1c7cc" />
+
 ## 🔧 Requirements
 ### 1. Create and Activate Conda Environment
 ```

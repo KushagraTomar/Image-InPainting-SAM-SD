@@ -10,14 +10,11 @@ This repository provides an image inpainting pipeline combining Segment Anything
 
 [[`Paper`](https://ai.facebook.com/research/publications/segment-anything/)] [[`Project`](https://segment-anything.com/)] [[`Demo`](https://segment-anything.com/demo)] [[`Dataset`](https://segment-anything.com/dataset/index.html)] [[`Blog`](https://ai.facebook.com/blog/segment-anything-foundation-model-image-segmentation/)] [[`BibTeX`](#citing-segment-anything)]
 
-![SAM design](assets/model_diagram.png?raw=true)
+<img width="2412" height="514" alt="image" src="https://github.com/user-attachments/assets/70253c9a-bd62-4ae9-9c46-a0a04993f778" />
 
 The **Segment Anything Model (SAM)** produces high quality object masks from input prompts such as points or boxes, and it can be used to generate masks for all objects in an image. It has been trained on a [dataset](https://segment-anything.com/dataset/index.html) of 11 million images and 1.1 billion masks, and has strong zero-shot performance on a variety of segmentation tasks.
 
-<p float="left">
-  <img src="assets/masks1.png?raw=true" width="37.25%" />
-  <img src="assets/masks2.jpg?raw=true" width="61.5%" /> 
-</p>
+<img width="1057" height="705" alt="image" src="https://github.com/user-attachments/assets/66d4dcc8-31dc-475c-a9bc-fa25fbba1891" />
 
 ## 🔧 Requirements
 ### 1. Create and Activate Conda Environment

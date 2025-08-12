@@ -74,106 +74,784 @@ python replace_anything.py \
     --sam_ckpt ./pretrained/sam_vit_h_4b8939.pth
 ```
 
-## 🌐 Web Application
+# 🌐 Image Inpainting Web Application
 
-For a user-friendly web interface, see the [Web Application Guide](WEB_README.md).
+A modern web interface for the Image Inpainting project using SAM (Segment Anything Model) + Stable Diffusion. This application provides an intuitive way to fill or replace parts of images using AI.
 
-### Quick Start (Web Interface)
+## 🎯 Features
+
+- **Interactive Image Upload**: Drag & drop or click to upload images
+- **Point-and-Click Selection**: Click on the image to select the area for inpainting
+- **Two Inpainting Modes**:
+  - **Fill**: Fill a selected area with new content based on text prompt
+  - **Replace**: Replace an object with something else based on text prompt
+- **Real-time Preview**: See your selected coordinates and mask
+- **Responsive Design**: Works on desktop and mobile devices
+- **Modern UI**: Clean, gradient-based design with smooth animations
+
+## 🚀 Quick Start
+
+### 1. Install Dependencies
+
 ```bash
-# Install dependencies
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Install Segment Anything Model
+pip install -e segment_anything
+```
+
+### 2. Download SAM Checkpoint
+
+```bash
+# Download the SAM ViT-H checkpoint (2.6GB)
+wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+
+# Move it to the pretrained directory
+mv sam_vit_h_4b8939.pth pretrained/
+```
+
+### 3. Start the Server
+
+```bash
+# Using the startup script (recommended)
+python run_server.py
+
+# Or directly with uvicorn
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 4. Open Your Browser
+
+Navigate to: `http://localhost:8000`
+
+## 📱 How to Use
+
+### Step 1: Upload an Image
+- Click "Choose Image" or drag & drop an image file
+- Supported formats: JPG, PNG, JPEG
+- The image will be displayed on a canvas
+
+### Step 2: Select a Point
+- Click anywhere on the image to select the area you want to modify
+- You'll see a red crosshair indicating your selection
+- The coordinates will be displayed below the image
+
+### Step 3: Enter a Text Prompt
+- Describe what you want to fill or replace the selected area with
+- Examples:
+  - For Fill: "a beautiful garden", "blue sky with clouds"
+  - For Replace: "a red car", "a person sitting"
+
+### Step 4: Choose Operation
+- **Fill**: Fills the selected area with new content
+- **Replace**: Replaces the selected object with something new
+
+### Step 5: View Results
+- The processing will take 1-3 minutes depending on your hardware
+- You'll see three images: Original, Mask, and Result
+- Click "Process New Image" to start over
+
+## ⚙️ Configuration Options
+
+### Dilate Kernel Size
+- Controls how much the mask is expanded around the selected point
+- Range: 1-50 pixels
+- Default: 15
+- Higher values = larger affected area
+
+### Advanced Settings
+You can modify these in [`app.py`](app.py):
+
+```python
+# Model configuration
+SAM_MODEL_TYPE = "vit_h"  # Options: vit_h, vit_l, vit_b
+SAM_CHECKPOINT = "./pretrained/sam_vit_h_4b8939.pth"
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+```
+
+## 🏗️ Architecture
+
+### Backend (FastAPI)
+- [`app.py`](app.py): Main FastAPI application
+- **Endpoints**:
+  - `GET /`: Serves the web interface
+  - `POST /api/fill`: Fill operation
+  - `POST /api/replace`: Replace operation
+  - `GET /api/health`: Health check
+
+### Frontend
+- [`static/style.css`](static/style.css): Modern CSS with gradients and animations
+- [`static/script.js`](static/script.js): Interactive JavaScript for image handling
+- **Features**:
+  - Canvas-based image display
+  - Click coordinate detection
+  - Drag & drop file upload
+  - Responsive design
+  - Loading animations
+
+### Core Processing
+- [`main_fill.py`](main_fill.py): Fill operation logic
+- [`main_replace.py`](main_replace.py): Replace operation logic
+- [`utils/`](utils/): Utility functions for image processing
+
+## 🔧 API Reference
+
+### Fill Endpoint
+```http
+POST /api/fill
+Content-Type: multipart/form-data
+
+Parameters:
+- image: Image file
+- point_x: X coordinate (float)
+- point_y: Y coordinate (float)
+- text_prompt: Description text (string)
+- dilate_kernel_size: Mask dilation (int, default: 15)
+```
+
+### Replace Endpoint
+```http
+POST /api/replace
+Content-Type: multipart/form-data
+
+Parameters:
+- image: Image file
+- point_x: X coordinate (float)
+- point_y: Y coordinate (float)
+- text_prompt: Description text (string)
+- dilate_kernel_size: Mask dilation (int, default: 15)
+```
+
+### Response Format
+```json
+{
+  "success": true,
+  "original": "data:image/png;base64,...",
+  "mask": "data:image/png;base64,...",
+  "result": "data:image/png;base64,..."
+}
+```
+
+## 🎨 Customization
+
+### Styling
+Modify [`static/style.css`](static/style.css) to change:
+- Color schemes
+- Layout
+- Animations
+- Responsive breakpoints
+
+### Functionality
+Modify [`static/script.js`](static/script.js) to add:
+- Multiple point selection
+- Batch processing
+- Additional image filters
+- Custom UI components
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+**1. "SAM checkpoint not found"**
+```bash
+# Download the checkpoint
+wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
+mv sam_vit_h_4b8939.pth pretrained/
+```
+
+**2. "CUDA out of memory"**
+- The app automatically falls back to CPU if CUDA is unavailable
+- For CPU-only usage, processing will be slower but still functional
+
+**3. "Module not found" errors**
+```bash
+# Install all dependencies
 pip install -r requirements.txt
 pip install -e segment_anything
+```
+
+**4. Slow processing**
+- First run downloads Stable Diffusion models (~5GB)
+- Subsequent runs are faster
+- CPU processing takes 2-5 minutes per image
+- GPU processing takes 30-60 seconds per image
+
+### Performance Tips
+
+1. **Use GPU**: Ensure CUDA is available for faster processing
+2. **Image Size**: Smaller images process faster
+3. **Batch Processing**: Process multiple images in sequence
+4. **Model Caching**: Models are cached after first use
+
+## 📊 System Requirements
+
+### Minimum Requirements
+- Python 3.8+
+- 8GB RAM
+- 10GB free disk space
+- CPU: Any modern processor
+
+### Recommended Requirements
+- Python 3.10+
+- 16GB RAM
+- NVIDIA GPU with 8GB+ VRAM
+- 20GB free disk space
+- CPU: Intel i7 or AMD Ryzen 7+
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## 📄 License
+
+This project extends the original Image Inpainting project. Please refer to the main [`LICENSE`](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Segment Anything Model (SAM)** by Meta AI
+- **Stable Diffusion** by Stability AI
+- **FastAPI** for the web framework
+- Original command-line implementation authors
+
+# 🐳 Docker & Kubernetes Deployment Guide
+
+This guide provides comprehensive instructions for deploying the Image Inpainting application using Docker and Kubernetes.
+
+## 📋 Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Docker Deployment](#docker-deployment)
+- [Kubernetes Deployment](#kubernetes-deployment)
+- [Helm Deployment](#helm-deployment)
+- [Configuration](#configuration)
+- [Monitoring & Troubleshooting](#monitoring--troubleshooting)
+- [Production Considerations](#production-considerations)
+
+## 🔧 Prerequisites
+
+### System Requirements
+- **Docker**: Version 20.10+ with GPU support
+- **Kubernetes**: Version 1.20+
+- **kubectl**: Latest version
+- **Helm**: Version 3.0+ (optional)
+- **NVIDIA GPU**: With CUDA 11.8+ support
+- **Storage**: 50GB+ available space
+
+### GPU Support
+```bash
+# Install NVIDIA Container Toolkit
+distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
+curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
+
+sudo apt-get update && sudo apt-get install -y nvidia-docker2
+sudo systemctl restart docker
+```
+
+## 🐳 Docker Deployment
+
+### 1. Build the Docker Image
+
+```bash
+# Build the image
+docker build -t image-inpainting:latest .
+
+# Build with specific tag
+docker build -t image-inpainting:v1.0.0 .
+```
+
+### 2. Run with Docker Compose (Recommended)
+
+```bash
+# Start the application
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the application
+docker-compose down
+```
+
+### 3. Manual Docker Run
+
+```bash
+# Create necessary directories
+mkdir -p uploads results pretrained
 
 # Download SAM checkpoint
 wget -O pretrained/sam_vit_h_4b8939.pth \
   https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth
 
-# Start the web server
-python run_server.py
-# Open http://localhost:8000 in your browser
+# Run the container
+docker run -d \
+  --name image-inpainting \
+  --gpus all \
+  -p 8000:8000 \
+  -v $(pwd)/uploads:/app/uploads \
+  -v $(pwd)/results:/app/results \
+  -v $(pwd)/pretrained:/app/pretrained \
+  -e CUDA_VISIBLE_DEVICES=0 \
+  image-inpainting:latest
 ```
 
-## 🐳 Docker & Kubernetes Deployment
+### 4. Docker Commands
 
-This project supports containerized deployment with Docker and Kubernetes for production environments.
-
-### Quick Docker Start
 ```bash
-# Build and run with Docker Compose
-docker-compose up -d
+# View running containers
+docker ps
 
-# Access the application at http://localhost:8000
+# View logs
+docker logs image-inpainting
+
+# Execute commands in container
+docker exec -it image-inpainting bash
+
+# Stop container
+docker stop image-inpainting
+
+# Remove container
+docker rm image-inpainting
 ```
 
-### Kubernetes Deployment
+## ☸️ Kubernetes Deployment
+
+### 1. Prepare Your Cluster
+
 ```bash
-# Deploy to Kubernetes cluster
+# Verify cluster connection
+kubectl cluster-info
+
+# Create namespace (optional)
+kubectl create namespace image-inpainting
+
+# Set default namespace
+kubectl config set-context --current --namespace=image-inpainting
+```
+
+### 2. Deploy with Raw Manifests
+
+```bash
+# Apply all manifests
 kubectl apply -f k8s/
 
-# Or use Helm
+# Or apply individually
+kubectl apply -f k8s/configmap.yaml
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
+
+### 3. Deploy with Kustomize
+
+```bash
+# Deploy using kustomize
+kubectl apply -k k8s/
+
+# View generated resources
+kubectl kustomize k8s/
+```
+
+### 4. Verify Deployment
+
+```bash
+# Check pods
+kubectl get pods -l app=image-inpainting
+
+# Check services
+kubectl get services
+
+# Check persistent volumes
+kubectl get pv,pvc
+
+# View logs
+kubectl logs -l app=image-inpainting -f
+```
+
+### 5. Access the Application
+
+```bash
+# Port forward for local access
+kubectl port-forward service/image-inpainting-service 8000:8000
+
+# Or use NodePort
+kubectl get service image-inpainting-nodeport
+# Access via http://NODE_IP:30800
+
+# Or use LoadBalancer (cloud environments)
+kubectl get service image-inpainting-loadbalancer
+```
+
+## ⛵ Helm Deployment
+
+### 1. Install Helm Chart
+
+```bash
+# Install from local chart
 helm install image-inpainting k8s/helm/image-inpainting/
+
+# Install with custom values
+helm install image-inpainting k8s/helm/image-inpainting/ \
+  --values k8s/helm/image-inpainting/values.yaml
+
+# Install with overrides
+helm install image-inpainting k8s/helm/image-inpainting/ \
+  --set image.tag=v1.0.0 \
+  --set replicaCount=2
 ```
 
-📖 **For detailed Docker and Kubernetes deployment instructions, see [DOCKER_KUBERNETES_README.md](DOCKER_KUBERNETES_README.md)**
+### 2. Helm Management
 
-## 📁 Project Structure
+```bash
+# List releases
+helm list
 
-```
-├── app.py                          # FastAPI web application
-├── run_server.py                   # Server startup script
-├── main_fill.py                    # Fill operation logic
-├── main_replace.py                 # Replace operation logic
-├── requirements.txt                # Python dependencies
-├── Dockerfile                      # Docker container definition
-├── docker-compose.yml              # Docker Compose configuration
-├── .dockerignore                   # Docker ignore file
-├── k8s/                           # Kubernetes manifests
-│   ├── deployment.yaml            # Kubernetes deployment
-│   ├── service.yaml               # Kubernetes services
-│   ├── configmap.yaml             # Configuration and secrets
-│   ├── kustomization.yaml         # Kustomize configuration
-│   └── helm/                      # Helm chart
-│       └── image-inpainting/      # Helm chart files
-├── static/                        # Web UI assets
-│   ├── style.css                  # Web interface styles
-│   └── script.js                  # Web interface logic
-├── utils/                         # Utility functions
-├── segment_anything/              # SAM model implementation
-├── examples/                      # Example images
-├── pretrained/                    # Model checkpoints
-├── uploads/                       # Uploaded images
-└── results/                       # Processing results
+# Upgrade release
+helm upgrade image-inpainting k8s/helm/image-inpainting/
+
+# Rollback release
+helm rollback image-inpainting 1
+
+# Uninstall release
+helm uninstall image-inpainting
 ```
 
-## 🚀 Deployment Options
+### 3. Custom Values
 
-### 1. Local Development
-- **Command Line**: Use `python main_fill.py` or `python main_replace.py`
-- **Web Interface**: Use `python run_server.py` for local web UI
+Create a custom `values.yaml`:
 
-### 2. Docker (Recommended for Production)
-- **Single Container**: `docker run` with GPU support
-- **Docker Compose**: Multi-service setup with volumes and networking
-- **Supports**: GPU acceleration, persistent storage, health checks
+```yaml
+# custom-values.yaml
+replicaCount: 2
 
-### 3. Kubernetes (Enterprise/Scale)
-- **Raw Manifests**: Direct kubectl deployment
-- **Kustomize**: Configuration management
-- **Helm Charts**: Package management and templating
-- **Features**: Auto-scaling, load balancing, persistent volumes, monitoring
+image:
+  tag: "v1.0.0"
 
-## 🔧 Configuration
+resources:
+  limits:
+    memory: "16Gi"
+    cpu: "4000m"
+
+ingress:
+  enabled: true
+  hosts:
+    - host: inpainting.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+persistence:
+  results:
+    size: 100Gi
+```
+
+```bash
+helm install image-inpainting k8s/helm/image-inpainting/ -f custom-values.yaml
+```
+
+## ⚙️ Configuration
 
 ### Environment Variables
+
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `SAM_MODEL_TYPE` | SAM model variant | `vit_h` |
-| `SAM_CHECKPOINT` | Path to SAM weights | `./pretrained/sam_vit_h_4b8939.pth` |
-| `DEVICE` | Compute device | `cuda` if available |
-| `HOST` | Server bind address | `0.0.0.0` |
+| `SAM_MODEL_TYPE` | SAM model type | `vit_h` |
+| `SAM_CHECKPOINT` | Path to SAM checkpoint | `/app/pretrained/sam_vit_h_4b8939.pth` |
+| `DEVICE` | Compute device | `cuda` |
+| `HOST` | Server host | `0.0.0.0` |
 | `PORT` | Server port | `8000` |
+| `MAX_WORKERS` | Worker processes | `4` |
+| `LOG_LEVEL` | Logging level | `INFO` |
 
-### Hardware Requirements
-- **Minimum**: 8GB RAM, CPU-only (slow)
-- **Recommended**: 16GB RAM, NVIDIA GPU with 8GB+ VRAM
-- **Storage**: 20GB+ for models and processing
+### Storage Configuration
+
+#### Persistent Volumes
+- **uploads**: 10GB for uploaded images
+- **results**: 50GB for processed results
+- **pretrained**: 20GB for model checkpoints
+
+#### Storage Classes
+```yaml
+# Example storage class for fast SSD
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: fast-ssd
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp3
+  iops: "3000"
+  throughput: "125"
+```
+
+### GPU Configuration
+
+#### Node Labels
+```bash
+# Label GPU nodes
+kubectl label nodes <node-name> accelerator=nvidia-tesla-gpu
+```
+
+#### GPU Operator (NVIDIA)
+```bash
+# Install GPU Operator
+helm repo add nvidia https://nvidia.github.io/gpu-operator
+helm repo update
+helm install gpu-operator nvidia/gpu-operator \
+  --namespace gpu-operator-resources \
+  --create-namespace
+```
+
+## 📊 Monitoring & Troubleshooting
+
+### Health Checks
+
+```bash
+# Check application health
+curl http://localhost:8000/api/health
+
+# Kubernetes health check
+kubectl get pods -l app=image-inpainting
+kubectl describe pod <pod-name>
+```
+
+### Common Issues
+
+#### 1. GPU Not Available
+```bash
+# Check GPU availability
+kubectl describe node <gpu-node>
+kubectl get nodes -l accelerator=nvidia-tesla-gpu
+
+# Verify GPU operator
+kubectl get pods -n gpu-operator-resources
+```
+
+#### 2. Out of Memory
+```bash
+# Check resource usage
+kubectl top pods
+kubectl describe pod <pod-name>
+
+# Increase memory limits
+kubectl patch deployment image-inpainting-app -p '{"spec":{"template":{"spec":{"containers":[{"name":"image-inpainting","resources":{"limits":{"memory":"16Gi"}}}]}}}}'
+```
+
+#### 3. Storage Issues
+```bash
+# Check PVC status
+kubectl get pvc
+kubectl describe pvc <pvc-name>
+
+# Check available storage
+kubectl exec -it <pod-name> -- df -h
+```
+
+### Logging
+
+```bash
+# View application logs
+kubectl logs -l app=image-inpainting -f
+
+# View logs from specific container
+kubectl logs <pod-name> -c image-inpainting
+
+# Export logs
+kubectl logs <pod-name> > app.log
+```
+
+### Debugging
+
+```bash
+# Access container shell
+kubectl exec -it <pod-name> -- bash
+
+# Run debug commands
+kubectl exec -it <pod-name> -- python -c "import torch; print(torch.cuda.is_available())"
+
+# Port forward for debugging
+kubectl port-forward <pod-name> 8000:8000
+```
+
+## 🚀 Production Considerations
+
+### Security
+
+#### 1. Network Policies
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: image-inpainting-netpol
+spec:
+  podSelector:
+    matchLabels:
+      app: image-inpainting
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+```
+
+#### 2. Pod Security Standards
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    fsGroup: 2000
+  containers:
+  - name: image-inpainting
+    securityContext:
+      allowPrivilegeEscalation: false
+      readOnlyRootFilesystem: true
+      capabilities:
+        drop:
+        - ALL
+```
+
+### High Availability
+
+#### 1. Multiple Replicas
+```yaml
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+```
+
+#### 2. Pod Disruption Budget
+```yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: image-inpainting-pdb
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: image-inpainting
+```
+
+### Performance Optimization
+
+#### 1. Resource Requests/Limits
+```yaml
+resources:
+  requests:
+    memory: "4Gi"
+    cpu: "1000m"
+    nvidia.com/gpu: 1
+  limits:
+    memory: "8Gi"
+    cpu: "2000m"
+    nvidia.com/gpu: 1
+```
+
+#### 2. Horizontal Pod Autoscaler
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: image-inpainting-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: image-inpainting-app
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+```
+
+### Backup & Recovery
+
+#### 1. Persistent Volume Snapshots
+```bash
+# Create volume snapshot
+kubectl create -f - <<EOF
+apiVersion: snapshot.storage.k8s.io/v1
+kind: VolumeSnapshot
+metadata:
+  name: results-snapshot
+spec:
+  source:
+    persistentVolumeClaimName: results-pvc
+EOF
+```
+
+#### 2. Application Backup
+```bash
+# Backup configuration
+kubectl get configmap image-inpainting-config -o yaml > config-backup.yaml
+kubectl get secret image-inpainting-secrets -o yaml > secrets-backup.yaml
+```
+
+## 🔄 CI/CD Integration
+
+### GitHub Actions Example
+
+```yaml
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Build Docker image
+      run: docker build -t image-inpainting:${{ github.sha }} .
+    
+    - name: Push to registry
+      run: |
+        docker tag image-inpainting:${{ github.sha }} your-registry/image-inpainting:${{ github.sha }}
+        docker push your-registry/image-inpainting:${{ github.sha }}
+    
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl set image deployment/image-inpainting-app \
+          image-inpainting=your-registry/image-inpainting:${{ github.sha }}
+```
+
+## 📚 Additional Resources
+
+- [Docker Documentation](https://docs.docker.com/)
+- [Kubernetes Documentation](https://kubernetes.io/docs/)
+- [Helm Documentation](https://helm.sh/docs/)
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html)
+- [Kubernetes GPU Support](https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/)
+
+## 🆘 Support
+
+For issues and questions:
+1. Check the [troubleshooting section](#monitoring--troubleshooting)
+2. Review application logs
+3. Check Kubernetes events: `kubectl get events`
+4. Open an issue in the project repository

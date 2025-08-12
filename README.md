@@ -299,25 +299,6 @@ pip install -e segment_anything
 - 20GB free disk space
 - CPU: Intel i7 or AMD Ryzen 7+
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
-
-This project extends the original Image Inpainting project. Please refer to the main [`LICENSE`](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Segment Anything Model (SAM)** by Meta AI
-- **Stable Diffusion** by Stability AI
-- **FastAPI** for the web framework
-- Original command-line implementation authors
-
 # 🐳 Docker & Kubernetes Deployment Guide
 
 This guide provides comprehensive instructions for deploying the Image Inpainting application using Docker and Kubernetes.

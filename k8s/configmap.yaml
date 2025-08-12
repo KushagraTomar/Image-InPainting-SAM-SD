@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: image-inpainting-config
+  namespace: default
+  labels:
+    app: image-inpainting
+data:
+  # Application configuration
+  SAM_MODEL_TYPE: "vit_h"
+  SAM_CHECKPOINT: "/app/pretrained/sam_vit_h_4b8939.pth"
+  DEVICE: "cuda"
+  HOST: "0.0.0.0"
+  PORT: "8000"
+  
+  # Directories
+  UPLOAD_DIR: "/app/uploads"
+  RESULTS_DIR: "/app/results"
+  PRETRAINED_DIR: "/app/pretrained"
+  
+  # Performance settings
+  MAX_WORKERS: "4"
+  TIMEOUT: "300"
+  MAX_FILE_SIZE: "100MB"
+  
+  # Logging configuration
+  LOG_LEVEL: "INFO"
+  LOG_FORMAT: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # CORS settings
+  CORS_ORIGINS: "*"
+  CORS_METHODS: "GET,POST,PUT,DELETE,OPTIONS"
+  CORS_HEADERS: "*"
+  
+  # Health check settings
+  HEALTH_CHECK_INTERVAL: "30"
+  HEALTH_CHECK_TIMEOUT: "10"
+  
+  # Model settings
+  STABLE_DIFFUSION_MODEL: "runwayml/stable-diffusion-inpainting"
+  INFERENCE_STEPS: "20"
+  GUIDANCE_SCALE: "7.5"
+  
+  # Cache settings
+  MODEL_CACHE_DIR: "/app/.cache"
+  ENABLE_MODEL_CACHE: "true"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: image-inpainting-secrets
+  namespace: default
+  labels:
+    app: image-inpainting
+type: Opaque
+data:
+  # Base64 encoded secrets
+  # Example: echo -n "your-secret-key" | base64
+  SECRET_KEY: "eW91ci1zZWNyZXQta2V5LWhlcmU="
+  
+  # API keys (if needed for external services)
+  HUGGINGFACE_TOKEN: ""
+  OPENAI_API_KEY: ""
+  
+  # Database credentials (if using external database)
+  DB_USERNAME: ""
+  DB_PASSWORD: ""
+  DB_HOST: ""
+  DB_PORT: ""
+  DB_NAME: ""
+  
+  # Redis credentials (if using Redis for caching)
+  REDIS_URL: ""
+  REDIS_PASSWORD: ""
+  
+  # S3 credentials (if using S3 for storage)
+  AWS_ACCESS_KEY_ID: ""
+  AWS_SECRET_ACCESS_KEY: ""
+  AWS_REGION: ""
+  S3_BUCKET_NAME: ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: default
+  labels:
+    app: image-inpainting
+data:
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+    
+    http {
+        upstream app {
+            server image-inpainting-service:8000;
+        }
+        
+        server {
+            listen 80;
+            server_name _;
+            
+            client_max_body_size 100M;
+            proxy_read_timeout 300s;
+            proxy_send_timeout 300s;
+            
+            location / {
+                proxy_pass http://app;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+            
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+        }
+    }

@@ -1,0 +1,50 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+metadata:
+  name: image-inpainting-app
+
+resources:
+  - deployment.yaml
+  - service.yaml
+  - configmap.yaml
+
+images:
+  - name: image-inpainting
+    newTag: latest
+
+commonLabels:
+  app: image-inpainting
+  environment: production
+
+namespace: default
+
+replicas:
+  - name: image-inpainting-app
+    count: 1
+
+configMapGenerator:
+  - name: app-config
+    files:
+      - config/app.properties
+    options:
+      disableNameSuffixHash: true
+
+secretGenerator:
+  - name: app-secrets
+    files:
+      - secrets/api-keys.env
+    type: Opaque
+    options:
+      disableNameSuffixHash: true
+
+patchesStrategicMerge:
+  - patches/resource-limits.yaml
+
+patchesJson6902:
+  - target:
+      group: apps
+      version: v1
+      kind: Deployment
+      name: image-inpainting-app
+    path: patches/add-sidecar.yaml

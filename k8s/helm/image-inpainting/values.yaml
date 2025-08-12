@@ -1,0 +1,161 @@
+# Default values for image-inpainting.
+# This is a YAML-formatted file.
+# Declare variables to be substituted into your templates.
+
+replicaCount: 1
+
+image:
+  repository: image-inpainting
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8000
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: image-inpainting.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 8Gi
+    nvidia.com/gpu: 1
+  requests:
+    cpu: 1000m
+    memory: 4Gi
+    nvidia.com/gpu: 1
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector:
+  accelerator: nvidia-tesla-gpu
+
+tolerations:
+  - key: nvidia.com/gpu
+    operator: Exists
+    effect: NoSchedule
+
+affinity: {}
+
+# Persistent Volume Claims
+persistence:
+  uploads:
+    enabled: true
+    storageClass: "fast-ssd"
+    accessMode: ReadWriteOnce
+    size: 10Gi
+  results:
+    enabled: true
+    storageClass: "fast-ssd"
+    accessMode: ReadWriteOnce
+    size: 50Gi
+  pretrained:
+    enabled: true
+    storageClass: "fast-ssd"
+    accessMode: ReadWriteOnce
+    size: 20Gi
+
+# Application configuration
+config:
+  samModelType: "vit_h"
+  samCheckpoint: "/app/pretrained/sam_vit_h_4b8939.pth"
+  device: "cuda"
+  host: "0.0.0.0"
+  port: 8000
+  uploadDir: "/app/uploads"
+  resultsDir: "/app/results"
+  pretrainedDir: "/app/pretrained"
+  maxWorkers: 4
+  timeout: 300
+  maxFileSize: "100MB"
+  logLevel: "INFO"
+  corsOrigins: "*"
+  stableDiffusionModel: "runwayml/stable-diffusion-inpainting"
+  inferenceSteps: 20
+  guidanceScale: 7.5
+  modelCacheDir: "/app/.cache"
+  enableModelCache: true
+
+# Secrets (base64 encoded)
+secrets:
+  secretKey: "eW91ci1zZWNyZXQta2V5LWhlcmU="
+  huggingfaceToken: ""
+  openaiApiKey: ""
+
+# Health checks
+healthCheck:
+  enabled: true
+  livenessProbe:
+    initialDelaySeconds: 120
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  readinessProbe:
+    initialDelaySeconds: 60
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  startupProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 12
+
+# GPU settings
+gpu:
+  enabled: true
+  count: 1
+  type: "nvidia-tesla-gpu"
+
+# Monitoring
+monitoring:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+    path: /metrics

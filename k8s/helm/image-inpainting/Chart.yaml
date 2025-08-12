@@ -1,0 +1,21 @@
+apiVersion: v2
+name: image-inpainting
+description: A Helm chart for Image Inpainting application with SAM + Stable Diffusion
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+home: https://github.com/your-org/image-inpainting-sam-sd
+sources:
+  - https://github.com/your-org/image-inpainting-sam-sd
+maintainers:
+  - name: Your Name
+    email: your.email@example.com
+keywords:
+  - ai
+  - machine-learning
+  - image-processing
+  - inpainting
+  - stable-diffusion
+  - sam
+annotations:
+  category: AI/ML

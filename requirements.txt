@@ -1,0 +1,25 @@
+# Core ML dependencies
+torch
+torchvision
+torchaudio
+diffusers
+transformers
+accelerate
+scipy
+safetensors
+timm
+
+# Web framework
+fastapi
+uvicorn[standard]
+python-multipart
+
+# Image processing
+Pillow
+opencv-python
+numpy
+matplotlib
+
+# Utilities
+pathlib
+typing-extensions

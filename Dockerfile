@@ -1,5 +1,5 @@
 # Use NVIDIA CUDA base image for GPU support
-FROM nvidia/cuda:11.8-devel-ubuntu22.04
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -37,7 +37,7 @@ RUN pip install --upgrade pip
 COPY requirements.txt .
 
 # Install Python dependencies
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
 RUN pip install -r requirements.txt
 
 # Copy segment_anything directory and install it
@@ -68,4 +68,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/api/health || exit 1
 
 # Run the application
-CMD ["python", "app.py"]
+CMD ["python", "run_server.py"]

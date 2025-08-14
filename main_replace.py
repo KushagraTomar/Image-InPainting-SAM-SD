@@ -88,7 +88,7 @@ def replace_img_with_sd(
         mask: np.ndarray,
         text_prompt: str,
         step: int = 50,
-        device="cuda"
+        device="cpu"
 ):
     pipe = StableDiffusionInpaintPipeline.from_pretrained(
         "stabilityai/stable-diffusion-2-inpainting",
@@ -115,7 +115,7 @@ def predict_masks_with_sam(
         point_labels: List[int],
         model_type: str,
         ckpt_p: str,
-        device="cuda"
+        device="cpu"
 ):
     point_coords = np.array(point_coords)
     point_labels = np.array(point_labels)

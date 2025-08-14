@@ -32,9 +32,10 @@ app.add_middleware(
 )
 
 # Configuration
-SAM_MODEL_TYPE = "vit_h"
-SAM_CHECKPOINT = "./pretrained/sam_vit_h_4b8939.pth"
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+SAM_MODEL_TYPE = "vit_b"
+SAM_CHECKPOINT = "./pretrained/sam_vit_b_01ec64.pth"
+# DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cpu"
 UPLOAD_DIR = Path("uploads")
 RESULTS_DIR = Path("results")
 

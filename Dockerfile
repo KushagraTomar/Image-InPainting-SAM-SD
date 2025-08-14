@@ -1,5 +1,7 @@
+# Use Ubuntu base image for CPU-only support
+FROM ubuntu:22.04
 # Use NVIDIA CUDA base image for GPU support
-FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
+# FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -36,8 +38,8 @@ RUN pip install --upgrade pip
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu124
+# Install Python dependencies (CPU-only PyTorch)
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 RUN pip install -r requirements.txt
 
 # Copy segment_anything directory and install it
@@ -51,11 +53,17 @@ RUN mkdir -p /app/pretrained /app/uploads /app/results /app/static
 COPY . .
 
 # Download SAM checkpoint if not present (optional - can be mounted as volume)
-RUN if [ ! -f /app/pretrained/sam_vit_h_4b8939.pth ]; then \
-    echo "Downloading SAM checkpoint..." && \
-    wget -O /app/pretrained/sam_vit_h_4b8939.pth \
-    https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth; \
-    fi
+# RUN if [ ! -f /app/pretrained/sam_vit_h_4b8939.pth ]; then \
+#     echo "Downloading SAM ViT-H checkpoint..." && \
+#     wget -O /app/pretrained/sam_vit_h_4b8939.pth \
+#     https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth; \
+#     fi
+# RUN if [ ! -f /app/pretrained/sam_vit_b_01ec64.pth ]; then \
+#     echo "Downloading SAM ViT-B checkpoint..." && \
+#     wget -O /app/pretrained/sam_vit_b_01ec64.pth \
+#     https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth; \
+#     fi
+
 
 # Set permissions
 RUN chmod +x /app/run_server.py

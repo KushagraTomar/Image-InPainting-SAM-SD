@@ -12,11 +12,11 @@ def check_requirements():
     print("🔍 Checking requirements...")
     
     # Check if SAM checkpoint exists
-    sam_checkpoint = Path("pretrained/sam_vit_h_4b8939.pth")
+    sam_checkpoint = Path("pretrained/sam_vit_b_01ec64.pth")
     if not sam_checkpoint.exists():
         print("❌ SAM checkpoint not found!")
         print("Please download the SAM checkpoint:")
-        print("wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth")
+        print("wget https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth")
         print("And place it in the pretrained/ directory")
         return False
     

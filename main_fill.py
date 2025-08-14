@@ -87,8 +87,8 @@ def fill_img_with_sd(
         img: np.ndarray,
         mask: np.ndarray,
         text_prompt: str,
-        device="cuda"
-):  
+        device="cpu"
+):
     # Load SD2 inpainting pipeline
     pipe = StableDiffusionInpaintPipeline.from_pretrained(
         "stabilityai/stable-diffusion-2-inpainting",
@@ -113,7 +113,7 @@ def predict_masks_with_sam(
         point_labels: List[int],
         model_type: str,
         ckpt_p: str,
-        device="cuda"
+        device="cpu"
 ):
     point_coords = np.array(point_coords)
     point_labels = np.array(point_labels)
@@ -163,7 +163,7 @@ def setup_args(parser):
     )
     parser.add_argument(
         "--sam_model_type", type=str,
-        default="vit_h", choices=['vit_h', 'vit_l', 'vit_b', 'vit_t'],
+        default="vit_b", choices=['vit_h', 'vit_l', 'vit_b', 'vit_t'],
         help="The type of sam model to load. Default: 'vit_h"
     )
     parser.add_argument(

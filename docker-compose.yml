@@ -9,12 +9,10 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      # Mount directories for persistent data
       - ./uploads:/app/uploads
       - ./results:/app/results
       - ./pretrained:/app/pretrained
       - ./models:/app/models
-      # Optional: mount static files for development
       - ./static:/app/static
     environment:
       - PYTHONUNBUFFERED=1
@@ -26,16 +24,6 @@ services:
     #         - driver: nvidia
     #           count: 1
     #           capabilities: [gpu]
-    deploy:
-      resources:
-        limits:
-          memory: 16G  
-        reservations:
-          memory: 8G
-          # devices:
-          #   - driver: nvidia
-          #     count: 1
-          #     capabilities: [gpu]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
@@ -64,3 +52,4 @@ volumes:
   uploads:
   results:
   pretrained:
+  models:

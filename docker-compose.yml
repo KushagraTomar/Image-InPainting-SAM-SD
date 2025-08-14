@@ -13,6 +13,7 @@ services:
       - ./uploads:/app/uploads
       - ./results:/app/results
       - ./pretrained:/app/pretrained
+      - ./models:/app/models
       # Optional: mount static files for development
       - ./static:/app/static
     environment:
@@ -25,6 +26,16 @@ services:
     #         - driver: nvidia
     #           count: 1
     #           capabilities: [gpu]
+    deploy:
+      resources:
+        limits:
+          memory: 16G  
+        reservations:
+          memory: 8G
+          # devices:
+          #   - driver: nvidia
+          #     count: 1
+          #     capabilities: [gpu]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]

@@ -32,9 +32,6 @@ RUN apt-get update && apt-get install -y \
 # Create symbolic link for python
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
-# Upgrade pip
-RUN pip install --upgrade pip
-
 # Copy requirements first for better caching
 COPY requirements.txt .
 
@@ -58,12 +55,15 @@ COPY . .
 #     wget -O /app/pretrained/sam_vit_h_4b8939.pth \
 #     https://dl.fbaipublicfiles.com/segment_anything/sam_vit_h_4b8939.pth; \
 #     fi
+
 # RUN if [ ! -f /app/pretrained/sam_vit_b_01ec64.pth ]; then \
 #     echo "Downloading SAM ViT-B checkpoint..." && \
 #     wget -O /app/pretrained/sam_vit_b_01ec64.pth \
 #     https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth; \
 #     fi
 
+# Tell Hugging Face libraries to use our preloaded model cache
+ENV HF_HOME=/app/models
 
 # Set permissions
 RUN chmod +x /app/run_server.py
